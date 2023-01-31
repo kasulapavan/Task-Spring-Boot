@@ -43,9 +43,8 @@ private HospitalService hospitalService;
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN', 'DOCTOR')")
-    @GetMapping(value = "/hospital/get-all")
-    public ApiResponse getAll(){
-        return hospitalService.getAll();
+    @GetMapping(value = "/hospital/get-all/{pageNumber}")
+    public ApiResponse getAll(@PathVariable Integer pageNumber){
+        return hospitalService.getAll(pageNumber);
     }
-
 }

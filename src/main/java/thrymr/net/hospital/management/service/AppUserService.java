@@ -1,6 +1,7 @@
 package thrymr.net.hospital.management.service;
 
 import com.nimbusds.jose.JOSEException;
+import org.springframework.data.domain.Page;
 import thrymr.net.hospital.management.custom.exception.ApiResponse;
 import thrymr.net.hospital.management.dto.AppUserDto;
 import thrymr.net.hospital.management.dto.SearchDto;
@@ -12,15 +13,18 @@ public interface AppUserService {
 
     ApiResponse save(AppUserDto appUserDto);
 
-    public ApiResponse signIn(AppUserDto loginDto) throws JOSEException;
+     ApiResponse signIn(AppUserDto loginDto) throws JOSEException;
 
     boolean deleteById(Long id);
-    public List<AppUserDto> associate(Long id, List<AppUserDto> appUserDtoList) throws JOSEException;
+     List<AppUserDto> associate(Long id, List<AppUserDto> appUserDtoList) throws JOSEException;
 
-    public AppUserDto disassociate(Long id, AppUserDto appUserList);
+     AppUserDto disassociate(Long id, AppUserDto appUserList);
 
-    public List<AppUserDto> findAllBySearch(SearchDto keyword);
 
+    Page<AppUserDto> search(SearchDto searchDto, Integer  offset, Integer pageSize);
+
+
+    public List<AppUserDto> searchBy(SearchDto searchDto);
 
 
 

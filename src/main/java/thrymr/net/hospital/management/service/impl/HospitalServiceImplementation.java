@@ -1,7 +1,9 @@
 package thrymr.net.hospital.management.service.impl;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -72,7 +74,7 @@ public class HospitalServiceImplementation  implements HospitalService {
 //Admin should be able to see all Hospitals and associated Doctors of each Hospital
     //The doctor should be able to access only the associated hospitals for him
 
-    public ApiResponse getAll() {
+    public ApiResponse getAll(Integer pageNumber) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
             return new ApiResponse(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED");
@@ -80,7 +82,7 @@ public class HospitalServiceImplementation  implements HospitalService {
         AppUser user = (AppUser) authentication.getPrincipal();
         if (user != null) {
             if (user.getRoleType().equals(RoleType.ADMIN)) {
-                List<AppUser> appUsers = appUserRepo.findAll();
+                List<AppUser> appUsers = appUserRepo.findAll(PageRequest.of(pageNumber,20)).toList();
                 return new ApiResponse(HttpStatus.OK.value(), appUsers);
             } else if (user.getRoleType().equals(RoleType.DOCTOR)) {
                 AppUser appUsers = appUserRepo.findByEmail(user.getEmail());

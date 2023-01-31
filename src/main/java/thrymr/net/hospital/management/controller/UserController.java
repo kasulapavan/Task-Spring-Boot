@@ -2,12 +2,14 @@ package thrymr.net.hospital.management.controller;
 
 import com.nimbusds.jose.JOSEException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import thrymr.net.hospital.management.custom.exception.ApiResponse;
 import thrymr.net.hospital.management.dto.AppUserDto;
 
 import thrymr.net.hospital.management.dto.SearchDto;
+import thrymr.net.hospital.management.entity.AppUser;
 import thrymr.net.hospital.management.service.AppUserService;
 
 import java.util.List;
@@ -50,16 +52,20 @@ AppUserService appUserService;
     public AppUserDto disassociate(@PathVariable Long id, @RequestBody AppUserDto appUserDto) {
         return appUserService.disassociate(id, appUserDto);
     }
-        @PreAuthorize("hasAuthority('ADMIN')")
 
-        @GetMapping(value = "/user-hospital/search")
+
+
+@PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping(path = "/user-hospital/search/{offset}/{pageSize}")
+public Page<AppUserDto> searchBy(@RequestBody SearchDto searchDto, @PathVariable Integer  offset, @PathVariable Integer pageSize){
+    return appUserService.search(searchDto, offset, pageSize);
+}
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+@GetMapping(path = "/user-hospital/search")
     public List<AppUserDto> search(@RequestBody SearchDto searchDto){
-        return appUserService.findAllBySearch(searchDto);
-        }
-
-
-
-
+        return appUserService.searchBy(searchDto);
+}
 
 
     }

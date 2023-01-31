@@ -12,7 +12,7 @@ public interface HospitalService {
 
     public ApiResponse saveAndUpdate(Long id, List<HospitalDto> hospitalDtoList);
 
-    public ApiResponse getAll();
+    public ApiResponse getAll(Integer pageNumber);
 
     public ApiResponse save(HospitalDto hospitalDtoList);
 

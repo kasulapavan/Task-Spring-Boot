@@ -1,8 +1,14 @@
 package thrymr.net.hospital.management.service.impl;
 
 import com.nimbusds.jose.JOSEException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -23,7 +29,7 @@ import thrymr.net.hospital.management.service.AppUserService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
+
 import java.util.stream.Collectors;
 
 
@@ -41,6 +47,9 @@ public class AppUserImplementation implements AppUserService {
 
     @Autowired
     private HospitalRepo hospitalRepo;
+
+    @Autowired
+    private EntityManager entityManager;
 
 
     @Autowired
@@ -92,6 +101,7 @@ public class AppUserImplementation implements AppUserService {
     }
 
 
+
     @Override
     public boolean deleteById(Long id) {  //delete doctor or user by Admin
         try {
@@ -136,48 +146,103 @@ public class AppUserImplementation implements AppUserService {
 //           return appUserList.stream().map(appUser1 -> modelMapper.map(appUser1, AppUserDto.class)).toList();
 //    }
 
-
-    public List<AppUserDto> findAllBySearch(SearchDto searchDto1) {
-        List<AppUser> appUser = appUserRepo.findAll();
-        List<AppUser> appUserList = null;
-        SearchDto searchDto = new SearchDto();
-        List<SearchDto> searchDtos = new ArrayList<SearchDto>();
-        for (AppUser appUser1 : appUser) {
-            searchDto.setName(appUser1.getName());
-            searchDto.setEducation(appUser1.getEducation());
-            searchDto.setDoctorSpecialization(appUser1.getSpecialization());
-            searchDto.setHospitalName(appUser1.getHospitalList().stream().map(Hospital::getName).toList().toString());
-            searchDtos.add(searchDto);
-        }
+//
+//    public List<AppUserDto> findAllBySearch(SearchDto searchDto1) {
+//        List<AppUser> appUser = appUserRepo.findAll();
+//        List<AppUser> appUserList = null;
+//        SearchDto searchDto = new SearchDto();
+//        List<SearchDto> searchDtos = new ArrayList<SearchDto>();
+//        for (AppUser appUser1 : appUser) {
+//            searchDto.setName(appUser1.getName());
+//            searchDto.setEducation(appUser1.getEducation());
+//            searchDto.setDoctorSpecialization(appUser1.getSpecialization());
+//            searchDto.setHospitalName(appUser1.getHospitalList().stream().map(Hospital::getName).toList().toString());
+//            searchDtos.add(searchDto);
 //        }
-        for (SearchDto searchDto12 : searchDtos) {
-
-            Predicate<AppUser> appUserPredicate = appUser1 -> appUser1.getName().equalsIgnoreCase(searchDto1.getName());
-            Predicate<AppUser> appUserPredicate1 = appUser1 -> appUser1.getEducation().equalsIgnoreCase(searchDto1.getEducation());
-            Predicate<AppUser> appUserPredicate2 = appUser1 -> appUser1.getSpecialization().equalsIgnoreCase(searchDto1.getDoctorSpecialization());
-            Predicate<AppUser> appUserPredicate3 = appUser1 -> appUser1.getHospitalList().stream().filter(hospital -> hospital.getName().equalsIgnoreCase(searchDto1.getName())).isParallel();
-            appUserList = appUser.stream().filter(appUserPredicate.or(appUserPredicate1).or(appUserPredicate2).or(appUserPredicate3)).toList();
-
-//                appUserList = appUser.stream().filter(appUser2 -> appUser2.getName().equalsIgnoreCase(searchDto1.getName())).toList();
-
-//            } else if (searchDto1.getEducation().equals(searchDto12.getEducation())) {
-//                appUserList = appUser.stream().filter(appUser2 -> appUser2.getEducation().equalsIgnoreCase(searchDto1.getEducation())).toList();
-//            } else if (searchDto1.getDoctorSpecialization().equals(searchDto12.getDoctorSpecialization())) {
-//                appUserList = appUser.stream().filter(appUser2 -> appUser2.getSpecialization().equalsIgnoreCase(searchDto1.getDoctorSpecialization())).toList();
-//
-//            } else if (searchDto1.getHospitalName().equals(searchDto12.getHospitalName())) {
-//
-//                appUserList = appUser.stream().filter(appUser2 -> appUser2.getHospitalList().stream().filter(app -> app.getName().equalsIgnoreCase(searchDto1.getHospitalName())).isParallel()).toList();
-//
-//            }
 //        for (SearchDto searchDto12 : searchDtos) {
 //
-//            if()
+//            Predicate<AppUser> appUserPredicate = appUser1 -> appUser1.getName().equalsIgnoreCase(searchDto1.getName());
+//            Predicate<AppUser> appUserPredicate1 = appUser1 -> appUser1.getEducation().equalsIgnoreCase(searchDto1.getEducation());
+//            Predicate<AppUser> appUserPredicate2 = appUser1 -> appUser1.getSpecialization().equalsIgnoreCase(searchDto1.getDoctorSpecialization());
+//            Predicate<AppUser> appUserPredicate3 = appUser1 -> appUser1.getHospitalList().stream().filter(hospital -> hospital.getName().equalsIgnoreCase(searchDto1.getName())).isParallel();
+//            appUserList = appUser.stream().filter(appUserPredicate.or(appUserPredicate1).or(appUserPredicate2).or(appUserPredicate3)).toList();
+//
+////                appUserList = appUser.stream().filter(appUser2 -> appUser2.getName().equalsIgnoreCase(searchDto1.getName())).toList();
+//
+////            } else if (searchDto1.getEducation().equals(searchDto12.getEducation())) {
+////                appUserList = appUser.stream().filter(appUser2 -> appUser2.getEducation().equalsIgnoreCase(searchDto1.getEducation())).toList();
+////            } else if (searchDto1.getDoctorSpecialization().equals(searchDto12.getDoctorSpecialization())) {
+////                appUserList = appUser.stream().filter(appUser2 -> appUser2.getSpecialization().equalsIgnoreCase(searchDto1.getDoctorSpecialization())).toList();
+////
+////            } else if (searchDto1.getHospitalName().equals(searchDto12.getHospitalName())) {
+////
+////                appUserList = appUser.stream().filter(appUser2 -> appUser2.getHospitalList().stream().filter(app -> app.getName().equalsIgnoreCase(searchDto1.getHospitalName())).isParallel()).toList();
+////
+////            }
+////        for (SearchDto searchDto12 : searchDtos) {
+////
+//
+//
 //        }
+//        return appUserList.stream().map(this::appUserEntityToDto).toList();
+//
+//    }
 
+
+    public Page<AppUserDto> search(SearchDto searchDto, Integer  offset, Integer pageSize) {
+        List<AppUser> appUserList = new ArrayList<AppUser>();
+        if(searchDto.getEducation() != null && searchDto.getName() != null && searchDto.getDoctorSpecialization() != null && searchDto.getHospitalName() != null) {
+            appUserList = appUserRepo.findAllByNameAndEducationAndSpecializationAndHospitalListName(searchDto.getName(), searchDto.getEducation(), searchDto.getDoctorSpecialization(), searchDto.getHospitalName());
+        }else if(searchDto.getName() != null && searchDto.getEducation() != null && searchDto.getDoctorSpecialization() != null){
+            appUserList = appUserRepo.findAllByNameAndEducationAndSpecialization(searchDto.getName(), searchDto.getEducation(), searchDto.getDoctorSpecialization());
+        }else if(searchDto.getName() != null && searchDto.getEducation() != null && searchDto.getHospitalName() != null){
+            appUserList = appUserRepo.findAllByNameAndEducationAndHospitalListName(searchDto.getName(), searchDto.getEducation(), searchDto.getHospitalName());
+        }else if(searchDto.getEducation() != null && searchDto.getHospitalName() != null && searchDto.getDoctorSpecialization() != null){
+            appUserList = appUserRepo.findAllByEducationAndSpecializationAndHospitalListName(searchDto.getEducation(), searchDto.getHospitalName(), searchDto.getDoctorSpecialization());
+        } else if(searchDto.getName() != null && searchDto.getEducation() != null){
+            appUserList = appUserRepo.findAllByNameAndEducation(searchDto.getName(), searchDto.getEducation());
+        } else if(searchDto.getEducation() != null && searchDto.getDoctorSpecialization() != null){
+            appUserList = appUserRepo.findAllByEducationAndSpecialization(searchDto.getEducation(), searchDto.getDoctorSpecialization());
+        }else if (searchDto.getDoctorSpecialization() != null && searchDto.getHospitalName() != null){
+            appUserList = appUserRepo.findAllBySpecializationAndHospitalListName(searchDto.getDoctorSpecialization() , searchDto.getHospitalName());
+        }else if( searchDto.getName() != null &&searchDto.getHospitalName() != null){
+            appUserList = appUserRepo.findAllByNameAndHospitalListName( searchDto.getName(), searchDto.getHospitalName());
+        } else if(searchDto.getName() != null){
+            appUserList = appUserRepo.findAllByName(searchDto.getName());
+        } else if(searchDto.getEducation() != null){
+            appUserList = appUserRepo.findAllByEducation(searchDto.getEducation());
+        } else if(searchDto.getDoctorSpecialization() != null){
+            appUserList =  appUserRepo.findAllBySpecialization(searchDto.getDoctorSpecialization());
+        } else if(searchDto.getHospitalName() != null){
+            appUserList = appUserRepo.findAllByHospitalListName(searchDto.getHospitalName());
         }
-        return appUserList.stream().map(this::appUserEntityToDto).toList();
 
+        return new PageImpl<AppUserDto>(appUserList.stream().map(this::appUserEntityToDto).collect(Collectors.toList()),PageRequest.of(offset,pageSize),0L);
+    }
+
+    public List<AppUserDto> searchBy(SearchDto searchDto){
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<AppUser> criteriaQuery = criteriaBuilder.createQuery(AppUser.class);
+        Root<AppUser> root = criteriaQuery.from(AppUser.class);
+        Join<AppUser, Hospital> appUserHospitalJoin = root.join("hospitalList");
+        String name = searchDto.getName();
+        String education = searchDto.getEducation();
+        String specialization = searchDto.getDoctorSpecialization();
+        String name1 =  searchDto.getHospitalName();
+        List<Predicate> searchCriteria = new ArrayList<Predicate>();
+        if (name != null) {
+            searchCriteria.add(criteriaBuilder.equal(root.get("name"), name));
+        }if (education != null) {
+            searchCriteria.add(criteriaBuilder.equal(root.get("education"), education));
+        }if (specialization != null) {
+            searchCriteria.add(criteriaBuilder.equal(root.get("specialization"), specialization));
+        }
+        if (name1 != null) {
+            searchCriteria.add(criteriaBuilder.equal(appUserHospitalJoin.get("name"),name1));
+        }
+        criteriaQuery.select(root).where(criteriaBuilder.and(searchCriteria.toArray(new Predicate[0])));
+        TypedQuery<AppUser> query = entityManager.createQuery(criteriaQuery);
+        return query.getResultList().stream().map(this::appUserEntityToDto).toList();
     }
 
 
@@ -229,8 +294,6 @@ public class AppUserImplementation implements AppUserService {
         return hospital;
 
     }
-
-
     public HospitalDto hospitalEntityToDto(Hospital hospital){
         HospitalDto hospitalDto = new HospitalDto();
         hospitalDto.setHospitalId(hospital.getHospitalId());
