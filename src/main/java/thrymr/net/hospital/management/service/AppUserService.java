@@ -21,11 +21,11 @@ public interface AppUserService {
      AppUserDto disassociate(Long id, AppUserDto appUserList);
 
 
-    Page<AppUserDto> search(SearchDto searchDto, Integer  offset, Integer pageSize);
+    List<AppUserDto> search(SearchDto searchDto, Integer  offset, Integer pageSize);
 
-
+    public ApiResponse searchByUser(SearchDto searchDto, Integer pageNo);
     public List<AppUserDto> searchBy(SearchDto searchDto);
-
-
+    public ApiResponse searchBySpecification(SearchDto searchDto);
+    public ApiResponse searchByPriority(SearchDto searchDto);
 
 }

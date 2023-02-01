@@ -6,9 +6,9 @@ import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
+
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,12 +24,12 @@ import thrymr.net.hospital.management.entity.Hospital;
 import thrymr.net.hospital.management.repository.AppUserRepo;
 import thrymr.net.hospital.management.repository.HospitalRepo;
 import thrymr.net.hospital.management.service.AppUserService;
+import thrymr.net.hospital.management.specfication.AppUserSpecification;
 
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 import java.util.stream.Collectors;
 
 
@@ -189,36 +189,38 @@ public class AppUserImplementation implements AppUserService {
 //    }
 
 
-    public Page<AppUserDto> search(SearchDto searchDto, Integer  offset, Integer pageSize) {
+    public List<AppUserDto> search(SearchDto searchDto, Integer  offset, Integer pageSize) {
         List<AppUser> appUserList = new ArrayList<AppUser>();
-        if(searchDto.getEducation() != null && searchDto.getName() != null && searchDto.getDoctorSpecialization() != null && searchDto.getHospitalName() != null) {
-            appUserList = appUserRepo.findAllByNameAndEducationAndSpecializationAndHospitalListName(searchDto.getName(), searchDto.getEducation(), searchDto.getDoctorSpecialization(), searchDto.getHospitalName());
-        }else if(searchDto.getName() != null && searchDto.getEducation() != null && searchDto.getDoctorSpecialization() != null){
-            appUserList = appUserRepo.findAllByNameAndEducationAndSpecialization(searchDto.getName(), searchDto.getEducation(), searchDto.getDoctorSpecialization());
+        if(searchDto.getEducation() != null && searchDto.getName() != null && searchDto.getSpecialization() != null && searchDto.getHospitalName() != null) {
+            appUserList = appUserRepo.findAllByNameAndEducationAndSpecializationAndHospitalListName(searchDto.getName(), searchDto.getEducation(), searchDto.getSpecialization(), searchDto.getHospitalName());
+        }else if(searchDto.getName() != null && searchDto.getEducation() != null && searchDto.getSpecialization() != null){
+            appUserList = appUserRepo.findAllByNameAndEducationAndSpecialization(searchDto.getName(), searchDto.getEducation(), searchDto.getSpecialization());
         }else if(searchDto.getName() != null && searchDto.getEducation() != null && searchDto.getHospitalName() != null){
             appUserList = appUserRepo.findAllByNameAndEducationAndHospitalListName(searchDto.getName(), searchDto.getEducation(), searchDto.getHospitalName());
-        }else if(searchDto.getEducation() != null && searchDto.getHospitalName() != null && searchDto.getDoctorSpecialization() != null){
-            appUserList = appUserRepo.findAllByEducationAndSpecializationAndHospitalListName(searchDto.getEducation(), searchDto.getHospitalName(), searchDto.getDoctorSpecialization());
+        }else if(searchDto.getEducation() != null && searchDto.getHospitalName() != null && searchDto.getSpecialization() != null){
+            appUserList = appUserRepo.findAllByEducationAndSpecializationAndHospitalListName(searchDto.getEducation(), searchDto.getHospitalName(), searchDto.getSpecialization());
         } else if(searchDto.getName() != null && searchDto.getEducation() != null){
             appUserList = appUserRepo.findAllByNameAndEducation(searchDto.getName(), searchDto.getEducation());
-        } else if(searchDto.getEducation() != null && searchDto.getDoctorSpecialization() != null){
-            appUserList = appUserRepo.findAllByEducationAndSpecialization(searchDto.getEducation(), searchDto.getDoctorSpecialization());
-        }else if (searchDto.getDoctorSpecialization() != null && searchDto.getHospitalName() != null){
-            appUserList = appUserRepo.findAllBySpecializationAndHospitalListName(searchDto.getDoctorSpecialization() , searchDto.getHospitalName());
+        } else if(searchDto.getEducation() != null && searchDto.getSpecialization() != null){
+            appUserList = appUserRepo.findAllByEducationAndSpecialization(searchDto.getEducation(), searchDto.getSpecialization());
+        }else if (searchDto.getSpecialization() != null && searchDto.getHospitalName() != null){
+            appUserList = appUserRepo.findAllBySpecializationAndHospitalListName(searchDto.getSpecialization() , searchDto.getHospitalName());
         }else if( searchDto.getName() != null &&searchDto.getHospitalName() != null){
             appUserList = appUserRepo.findAllByNameAndHospitalListName( searchDto.getName(), searchDto.getHospitalName());
         } else if(searchDto.getName() != null){
             appUserList = appUserRepo.findAllByName(searchDto.getName());
         } else if(searchDto.getEducation() != null){
             appUserList = appUserRepo.findAllByEducation(searchDto.getEducation());
-        } else if(searchDto.getDoctorSpecialization() != null){
-            appUserList =  appUserRepo.findAllBySpecialization(searchDto.getDoctorSpecialization());
+        } else if(searchDto.getSpecialization() != null){
+            appUserList =  appUserRepo.findAllBySpecialization(searchDto.getSpecialization());
         } else if(searchDto.getHospitalName() != null){
             appUserList = appUserRepo.findAllByHospitalListName(searchDto.getHospitalName());
         }
-
-        return new PageImpl<AppUserDto>(appUserList.stream().map(this::appUserEntityToDto).collect(Collectors.toList()),PageRequest.of(offset,pageSize),0L);
+        List<AppUserDto> appUserDtoList = appUserList.stream().map(this::appUserEntityToDto).toList();
+        return appUserDtoList.subList((offset*pageSize),(offset*pageSize)+pageSize);
+       // return new PageImpl<AppUserDto>(appUserList.stream().map(this::appUserEntityToDto).collect(Collectors.toList()),PageRequest.of(offset,pageSize),3L);
     }
+
 
     public List<AppUserDto> searchBy(SearchDto searchDto){
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
@@ -227,7 +229,7 @@ public class AppUserImplementation implements AppUserService {
         Join<AppUser, Hospital> appUserHospitalJoin = root.join("hospitalList");
         String name = searchDto.getName();
         String education = searchDto.getEducation();
-        String specialization = searchDto.getDoctorSpecialization();
+        String specialization = searchDto.getSpecialization();
         String name1 =  searchDto.getHospitalName();
         List<Predicate> searchCriteria = new ArrayList<Predicate>();
         if (name != null) {
@@ -246,6 +248,32 @@ public class AppUserImplementation implements AppUserService {
     }
 
 
+    public ApiResponse searchByUser(SearchDto searchDto, Integer pageNo){
+        Specification<AppUser> appUserSpecification = Specification.where(AppUserSpecification.hasName(searchDto.getName())
+                .and(AppUserSpecification.education(searchDto.getEducation())
+                        .and(AppUserSpecification.specialization(searchDto.getSpecialization())
+                                .and(AppUserSpecification.hospitalName(searchDto.getHospitalName())))));
+        return new ApiResponse(HttpStatus.OK.value(), appUserRepo.findAll(appUserSpecification,PageRequest.of(pageNo,2)).stream().map(this::appUserEntityToDto).toList());
+    }
+
+    public ApiResponse searchBySpecification(SearchDto searchDto){
+        return new ApiResponse(HttpStatus.OK.value(), appUserRepo.findAll(AppUserSpecification.search(searchDto)));
+    }
+
+    public ApiResponse searchByPriority(SearchDto searchDto){
+        List<AppUser> appUserList = appUserRepo.findAll();
+        List<AppUser> appUserList1 = new ArrayList<AppUser>();
+        List<AppUser> appUsers = new ArrayList<AppUser>();
+
+            if(searchDto.getName() != null){
+                appUsers= appUserList.stream().filter(appUser -> appUser.getName().equalsIgnoreCase(searchDto.getName())).toList();
+            }
+            else if(searchDto.getEducation() != null){
+                appUserList1 = appUsers.stream().filter(appUser -> appUser.getEducation().equalsIgnoreCase(searchDto.getEducation())).collect(Collectors.toList());
+            }
+            return new ApiResponse(HttpStatus.OK.value(), appUserList1.stream().map(this::appUserEntityToDto).toList());
+    }
+
     public AppUser appUserDtoToEntity(AppUserDto appUserDto) {
         AppUser appUser1 = new AppUser();
         if (appUser1.getHospitalList() != null) {
@@ -260,12 +288,8 @@ public class AppUserImplementation implements AppUserService {
         if (appUserDto.getHospitalList() != null) {
             appUser1.setHospitalList(appUserDto.getHospitalList().stream().map(this::hospitalDtoToEntity).toList());
         }
-
         return appUser1;
-
-
     }
-
     public AppUserDto appUserEntityToDto(AppUser appUser) {
         AppUserDto appUserDto = new AppUserDto();
         appUserDto.setId(appUser.getId());
@@ -274,9 +298,7 @@ public class AppUserImplementation implements AppUserService {
         appUserDto.setEducation(appUser.getEducation());
         appUserDto.setSpecialization(appUser.getSpecialization());
         appUserDto.setRoleType(appUser.getRoleType());
-
         if(appUser.getHospitalList() != null) {
-
             appUserDto.setHospitalList(appUser.getHospitalList().stream().map(this::hospitalEntityToDto).toList());
         }
 

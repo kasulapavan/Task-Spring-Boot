@@ -2,13 +2,14 @@ package thrymr.net.hospital.management.repository;
 
 import org.springframework.context.event.ApplicationListenerMethodAdapter;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import thrymr.net.hospital.management.entity.AppUser;
 import thrymr.net.hospital.management.enums.RoleType;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface AppUserRepo extends JpaRepository<AppUser, Long> {
+public interface AppUserRepo extends JpaRepository<AppUser, Long> , JpaSpecificationExecutor<AppUser> {
 
     AppUser findByEmail(String email);
 
