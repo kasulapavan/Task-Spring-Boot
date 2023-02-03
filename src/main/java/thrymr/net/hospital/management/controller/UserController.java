@@ -85,5 +85,12 @@ public List<AppUserDto> searchBy(@RequestBody SearchDto searchDto, @PathVariable
     public ApiResponse searchByPriority(@RequestBody SearchDto searchDto){
         return appUserService.searchBySpecification(searchDto);
     }
+
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping(path = "/user-hospital/search-priority-user/{offset}/{pageSize}")
+    public ApiResponse searchByPriority(@RequestBody SearchDto searchDto, @PathVariable Integer offset, @PathVariable Integer pageSize){
+        return appUserService.searchByPriority(searchDto,offset,pageSize);
+    }
     }
 

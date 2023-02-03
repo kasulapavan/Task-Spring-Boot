@@ -1,11 +1,9 @@
 package thrymr.net.hospital.management.service;
-
 import com.nimbusds.jose.JOSEException;
-import org.springframework.data.domain.Page;
 import thrymr.net.hospital.management.custom.exception.ApiResponse;
 import thrymr.net.hospital.management.dto.AppUserDto;
 import thrymr.net.hospital.management.dto.SearchDto;
-import thrymr.net.hospital.management.entity.AppUser;
+
 
 import java.util.List;
 
@@ -23,9 +21,8 @@ public interface AppUserService {
 
     List<AppUserDto> search(SearchDto searchDto, Integer  offset, Integer pageSize);
 
-    public ApiResponse searchByUser(SearchDto searchDto, Integer pageNo);
-    public List<AppUserDto> searchBy(SearchDto searchDto);
-    public ApiResponse searchBySpecification(SearchDto searchDto);
-    public ApiResponse searchByPriority(SearchDto searchDto);
-
+     ApiResponse searchByUser(SearchDto searchDto, Integer pageNo);
+     List<AppUserDto> searchBy(SearchDto searchDto);
+     ApiResponse searchBySpecification(SearchDto searchDto);
+     ApiResponse searchByPriority(SearchDto searchDto, Integer offset, Integer pageSize);
 }
